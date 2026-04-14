@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NRW Roleplay – Clip Tracker PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #08080b;
+  --bg2:     #0d0e12;
+  --bg3:     #14151c;
+  --card:    #0f1015;
+  --card2:   #15171e;
+  --border:  #20222c;
+  --border2: #2d303d;
+  --cyan:    #ff007a; 
+  --cyan2:   #cc0062;
+  --cyan-glow: rgba(255, 0, 122, 0.15);
+  --red:     #ff3355;
+  --green:   #00e5ff;
+  --gold:    #ffd700;
+  --text:    #e0e2eb;
+  --text-muted: #7b8296;
+  --text-dim:   #404452;
+  --mono: 'Share Tech Mono', monospace;
+  --head: 'Rajdhani', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+::selection{background:var(--cyan);color:#fff;}
+
+body {
+  font-family: var(--head);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::after {
+  content:'';
+  position:fixed;inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  pointer-events:none;z-index:9998;
+}
+
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(255,0,122,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,0,122,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+.wrap { position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:30px 20px 80px; }
+
+.header {
+  display:flex;align-items:center;gap:20px;
+  padding:24px 30px;
+  background: linear-gradient(135deg, var(--card) 0%, var(--bg3) 100%);
+  border:1px solid var(--border2);
+  border-radius:16px;
+  margin-bottom:30px;
+  box-shadow: 0 0 40px rgba(255,0,122,0.08), inset 0 1px 0 rgba(255,0,122,0.1);
+  animation: fadeDown .6s ease both;
+}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+
+.logo-img { width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--border2);flex-shrink:0; }
+
+.header-text h1 {
+  font-size:2em;font-weight:700;letter-spacing:.1em;
+  color:#fff;
+  text-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(255,0,122,0.4);
+}
+
+.header-right { margin-left:auto;text-align:right; }
+.live-badge {
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);
+  border-radius:20px;padding:5px 12px;font-size:.78em;font-family:var(--mono);color:var(--green);
+}
+.live-dot { width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite; }
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,255,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(0,229,255,0)}}
+
+.clip-section {
+  background: var(--card);border:1px solid var(--border2);border-radius:16px;
+  padding:24px 28px;margin-bottom:30px;
+}
+
+.form-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:16px;
+}
+
+.field-wrap { display:flex;flex-direction:column;gap:5px; }
+.field-label { font-size:.72em;letter-spacing:.12em;color:var(--text-muted); }
+.field-input, .field-area {
+  background:var(--bg2);border:1px solid var(--border2);border-radius:8px;
+  padding:9px 13px;color:var(--text);font-family:var(--mono);font-size:.88em;
+  outline:none;transition:all .2s;
+}
+.field-input:focus, .field-area:focus { border-color:var(--cyan);box-shadow:0 0 12px rgba(255,0,122,0.15); }
+
+/* Vergrößerte Textarea */
+.field-area {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.table-wrap { overflow-x:auto;margin-top:24px; }
+
+table {
+  width:100%;border-collapse:collapse;font-size:.88em;font-family:var(--mono);
+  min-width:1100px;
+}
+thead tr { background:var(--bg2);border-bottom:1px solid var(--border2); }
+thead th { padding:11px 14px;text-align:left;color:var(--cyan);font-weight:600; }
+tbody tr { border-bottom:1px solid var(--border); transition:background .15s; }
+tbody tr:hover { background:rgba(255,0,122,0.03); }
+tbody td { padding:10px 14px;color:var(--text);vertical-align:top; }
+
+.td-status-bad { color:var(--red); background:rgba(255,51,85,0.08); border-radius:5px; padding:2px 8px; }
+.td-status-ok { color:var(--green); background:rgba(0,229,255,0.08); border-radius:5px; padding:2px 8px; }
+.td-status-normal { color:var(--text); background:rgba(255,255,255,0.05); border-radius:5px; padding:2px 8px; }
+
+.btn {
+  font-family:var(--head);font-weight:600;letter-spacing:.08em;font-size:.88em;
+  padding:12px 24px;border-radius:8px;border:1px solid;cursor:pointer;
+  transition:all .2s; width: 100%;
+}
+.btn-red { background:rgba(255,51,85,0.1); border-color:var(--red); color:var(--red); }
+.btn-red:hover { background:rgba(255,51,85,0.2); box-shadow:0 0 15px rgba(255,51,85,0.3); }
+
+.del-row-btn { background:none; border:1px solid rgba(255,51,85,0.2); color:rgba(255,51,85,0.5); cursor:pointer; padding:5px 10px; border-radius:5px; }
+.del-row-btn:hover { border-color:var(--red); color:var(--red); }
+
+/* Notiz-Zelle Styling */
+.note-cell {
+  white-space: pre-line;
+  max-width: 300px;
+  font-size: 0.8em;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <img class="logo-img" src="a_022fde122956c152c5ea068214698f20.gif" alt="NRW Logo">
+    <div class="header-text">
+      <h1>NRW ROLEPLAY</h1>
+      <p>// CLIP TRACKER PRO — EPL DIVISION</p>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><span class="live-dot"></span>SYSTEM AKTIV</div>
+      <div style="font-family:var(--mono);font-size:.75em;color:var(--text-muted);margin-top:6px;" id="clockEl"></div>
+    </div>
+  </div>
+
+  <div class="clip-section">
+    <div style="font-size:1em;letter-spacing:.2em;color:var(--cyan);margin-bottom:16px;font-weight:600;">🎬 FEHLENDE CLIPS PROTOKOLL</div>
+    <div class="form-grid">
+      <div class="field-wrap">
+        <span class="field-label">DISCORD ID</span>
+        <input class="field-input" id="kcDiscord" placeholder="z.B. 1234567890">
+      </div>
+      <div class="field-wrap">
+        <span class="field-label">FRAKTION</span>
+        <input class="field-input" id="kcFrak" placeholder="z.B. Grove, LSPD...">
+      </div>
+      <div class="field-wrap">
+        <span class="field-label">NEU FEHLEND</span>
+        <input class="field-input" type="number" id="kcCurrent" placeholder="Anzahl">
+      </div>
+      <div class="field-wrap">
+        <span class="field-label">CHANNEL LINK</span>
+        <input class="field-input" id="kcUrl" placeholder="Discord Link...">
+      </div>
+      <div class="field-wrap" style="grid-column: span 4;">
+        <span class="field-label">NOTIZEN & VIELE LINKS (Jede Zeile ein Link)</span>
+        <textarea class="field-area" id="kcNote" placeholder="Link 1&#10;Link 2&#10;Zusatzinfo..."></textarea>
+      </div>
+    </div>
+    <button class="btn btn-red" onclick="addKillClip()">＋ EINTRAG SPEICHERN & DISCORD BENACHRICHTIGEN</button>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>DISCORD ID</th>
+            <th>FRAKTION</th>
+            <th>ZULETZT</th>
+            <th>GESAMT</th>
+            <th>NOTIZEN / LINKS</th>
+            <th>STATUS</th>
+            <th>AKTION</th>
+          </tr>
+        </thead>
+        <tbody id="killClipBody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;font-family:var(--mono);font-size:.85em;color:var(--cyan);" id="killClipStats"></div>
+  </div>
+
+</div>
+
+<script>
+function updateClock() {
+  const now = new Date();
+  const el = document.getElementById('clockEl');
+  if(el) el.textContent = now.toLocaleDateString('de-DE') + ' ' + now.toTimeString().slice(0,8);
+}
+setInterval(updateClock, 1000); updateClock();
+
+function getFrakColor(frak) {
+  if (!frak) return 0xff007a;
+  const f = frak.toLowerCase();
+  if (f.includes('lspd') || f.includes('fib') || f.includes('gov')) return 0x0055ff;
+  if (f.includes('ems') || f.includes('lsmd')) return 0xff3333;
+  if (f.includes('grove')) return 0x00ff00;
+  if (f.includes('ballas')) return 0x800080;
+  if (f.includes('vagos')) return 0xffff00;
+  if (f.includes('bloods')) return 0xff0000;
+  return 0xff007a;
+}
+
+function sendDiscordWebhook(entry) {
+  const webhookUrl = "https://discord.com/api/webhooks/1493708035493986414/UaUaKhkD0kFNq74UygmkOj0hrjq3oJCqC1IwUOy749MuNKZmkRWgxQIPY2fTMpUWlB9C";
+  const color = entry.done ? 0x00ff88 : getFrakColor(entry.frak);
+  const statusText = entry.done ? "✅ ABGEARBEITET" : (entry.total > 15 ? "💀 KRITISCH" : (entry.total > 5 ? "⚠️ ERHÖHT" : "🟣 OFFEN"));
+
+  const embed = {
+    title: "🎬 CLIP UPDATE: " + (entry.frak || "Unbekannt"),
+    color: color,
+    description: `👤 **Discord ID:** ${entry.discord}\n` +
+                 `📉 **Neu dazu:** ${entry.current}\n` +
+                 `📊 **Gesamt Schulden:** ${entry.total}\n` +
+                 `📌 **Status:** ${statusText}`,
+    fields: [],
+    footer: { text: "NRW Analyse System" },
+    timestamp: new Date().toISOString()
+  };
+
+  if (entry.url) embed.description += `\n🔗 **Channel:** [Hier klicken](${entry.url})`;
+  
+  if (entry.note) {
+    embed.fields.push({
+      name: "📝 Beweise & Notizen",
+      value: entry.note.substring(0, 1024) // Discord Limit Schutz
+    });
+  }
+
+  fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ embeds: [embed] })
+  });
+}
+
+let killClips = JSON.parse(localStorage.getItem('nrwFehlendeClips') || '[]');
+
+function addKillClip() {
+  const discord = document.getElementById('kcDiscord').value.trim();
+  const frak = document.getElementById('kcFrak').value.trim();
+  const current = parseInt(document.getElementById('kcCurrent').value) || 0;
+  const url = document.getElementById('kcUrl').value.trim();
+  const note = document.getElementById('kcNote').value.trim();
+
+  if(!discord){ alert('Discord ID fehlt!'); return; }
+
+  let existing = killClips.find(c => c.discord === discord);
+  if(existing) {
+    existing.current = current;
+    existing.total += current;
+    existing.done = false;
+    existing.note = note; // Notiz wird für diesen Eintrag aktualisiert
+    if(frak) existing.frak = frak;
+    if(url) existing.url = url;
+    killClips = killClips.filter(c => c.discord !== discord);
+    killClips.unshift(existing);
+  } else {
+    const newEntry = { discord, frak, current, total: current, url, note, ts: Date.now(), done: false };
+    killClips.unshift(newEntry);
+  }
+
+  saveKillClips(); renderKillClips();
+  sendDiscordWebhook(killClips[0]);
+  
+  // RESET DER FELDER - Wichtig für den nächsten Eintrag
+  document.getElementById('kcDiscord').value = '';
+  document.getElementById('kcFrak').value = '';
+  document.getElementById('kcCurrent').value = '';
+  document.getElementById('kcUrl').value = '';
+  document.getElementById('kcNote').value = '';
+}
+
+function toggleDone(ts) {
+  const entry = killClips.find(c => c.ts === ts);
+  if(entry) {
+    entry.done = !entry.done;
+    saveKillClips(); renderKillClips();
+    sendDiscordWebhook(entry);
+  }
+}
+
+function deleteKillClip(ts) {
+  if(confirm('Löschen?')) {
+    killClips = killClips.filter(c => c.ts !== ts);
+    saveKillClips(); renderKillClips();
+  }
+}
+
+function saveKillClips() { localStorage.setItem('nrwFehlendeClips', JSON.stringify(killClips)); }
+
+function renderKillClips() {
+  const tbody = document.getElementById('killClipBody');
+  if(!tbody) return;
+  
+  if(!killClips.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Keine Einträge vorhanden.</td></tr>';
+    return;
+  }
+
+  let sumTotal = 0;
+  tbody.innerHTML = killClips.map(c => {
+    sumTotal += c.total;
+    const statusClass = c.done ? 'td-status-ok' : (c.total > 15 ? 'td-status-bad' : 'td-status-normal');
+    const statusLabel = c.done ? 'ERLEDIGT' : (c.total > 15 ? 'KRITISCH' : 'OFFEN');
+    
+    return `<tr>
+      <td>${c.discord}</td>
+      <td>${c.frak || '—'}</td>
+      <td>+${c.current}</td>
+      <td style="font-weight:bold; color:var(--cyan);">${c.total}</td>
+      <td class="note-cell">${c.note || '—'}</td>
+      <td><span class="${statusClass}">${statusLabel}</span></td>
+      <td>
+        <button class="del-row-btn" onclick="toggleDone(${c.ts})">${c.done ? '↩️' : '✔️'}</button>
+        <button class="del-row-btn" onclick="deleteKillClip(${c.ts})">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('killClipStats').textContent = `OFFENE CLIPS SYSTEMWEIT: ${sumTotal}`;
+}
+
+renderKillClips();
+</script>
+</body>
+</html>
