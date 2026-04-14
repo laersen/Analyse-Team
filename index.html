@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundas und Laersens Leben</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #0c0a0e;
+            --bg2:       #120f16;
+            --bg3:       #1a1520;
+            --card:      #16111d;
+            --card2:     #1e1828;
+            --border:    #2e2240;
+            --border2:   #3d2f52;
+            --crimson:   #9b1d3a;
+            --crimson2:  #c42150;
+            --rose:      #e05070;
+            --rose-glow: rgba(196, 33, 80, 0.18);
+            --gold:      #c9a96e;
+            --gold-dim:  #7a6240;
+            --text:      #e8dff0;
+            --text-muted:#8a7a9a;
+            --text-dim:  #5a4d6a;
+            --shadow:    0 8px 40px rgba(0,0,0,0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::selection { background: var(--crimson); color: #fff; }
+
+        body {
+            font-family: 'Crimson Pro', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-size: 180px;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.45;
+            mix-blend-mode: overlay;
+        }
+
+        /* ambient glows */
+        .ambient { position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(90px); }
+        .a1 { width:600px;height:600px; background:radial-gradient(circle,rgba(155,29,58,.13) 0%,transparent 70%); top:-150px;left:-100px; animation:drift1 18s ease-in-out infinite; }
+        .a2 { width:400px;height:400px; background:radial-gradient(circle,rgba(100,20,80,.10) 0%,transparent 70%); bottom:10%;right:-80px; animation:drift2 22s ease-in-out infinite; }
+        @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,60px)}}
+        @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-50px)}}
+
+        /* page */
+        .page-wrap { position:relative; z-index:1; max-width:880px; margin:0 auto; padding:70px 24px 100px; }
+
+        /* ── MUSIC PLAYER ── */
+        .music-player {
+            position:fixed; bottom:28px; right:28px; z-index:100;
+            display:flex; align-items:center; gap:12px;
+            background:rgba(14,10,20,.93);
+            border:1px solid var(--border2);
+            border-radius:50px;
+            padding:10px 18px 10px 12px;
+            box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(155,29,58,.15);
+            backdrop-filter:blur(14px);
+            transition:all .3s;
+        }
+        .music-player:hover { border-color:var(--crimson2); box-shadow:0 8px 40px rgba(155,29,58,.3); }
+
+        .play-btn {
+            width:38px;height:38px; border-radius:50%;
+            background:linear-gradient(135deg,var(--crimson),var(--crimson2));
+            border:none; cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            font-size:.9em; color:#fff; flex-shrink:0;
+            transition:all .25s;
+            box-shadow:0 2px 12px rgba(155,29,58,.5);
+        }
+        .play-btn:hover { transform:scale(1.08); box-shadow:0 4px 20px rgba(155,29,58,.7); }
+
+        .music-info { line-height:1.3; min-width:130px; }
+        .music-title { font-family:'Playfair Display',serif; font-size:.82em; color:var(--text); font-style:italic; }
+        .music-sub   { font-size:.73em; color:var(--text-muted); margin-top:1px; outline:none; }
+        .music-sub:focus { border-bottom:1px dashed var(--gold-dim); }
+
+        .viz { display:flex; align-items:flex-end; gap:2px; height:18px; }
+        .viz span { width:3px; background:var(--crimson2); border-radius:2px; animation:bar .8s ease-in-out infinite; }
+        .viz span:nth-child(1){height:6px;animation-delay:0s}
+        .viz span:nth-child(2){height:14px;animation-delay:.15s}
+        .viz span:nth-child(3){height:9px;animation-delay:.3s}
+        .viz span:nth-child(4){height:16px;animation-delay:.1s}
+        .viz span:nth-child(5){height:7px;animation-delay:.25s}
+        .viz.paused span { animation-play-state:paused; }
+        @keyframes bar{0%,100%{transform:scaleY(.4);opacity:.7}50%{transform:scaleY(1);opacity:1}}
+
+        audio { display:none; }
+
+        /* ── HEADER ── */
+        .header { text-align:center; margin-bottom:72px; animation:fadeUp .9s ease both; }
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+        .sigil { font-size:1em; letter-spacing:16px; color:var(--crimson2); margin-bottom:28px; opacity:.8; }
+
+        h1 {
+            font-family:'Playfair Display',serif;
+            font-size:clamp(2.2em,5vw,3.8em);
+            font-weight:700; font-style:italic;
+            color:var(--text); line-height:1.1;
+            outline:none; padding:4px 10px; border-radius:6px;
+            transition:background .2s;
+        }
+        h1:hover { background:rgba(155,29,58,.12); cursor:text; }
+        h1:focus  { border-bottom:1px dashed var(--crimson2); border-radius:0; }
+
+        .header-rule { display:flex; align-items:center; gap:16px; margin:28px auto; max-width:400px; }
+        .header-rule::before { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--border2)); }
+        .header-rule::after  { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border2),transparent); }
+        .gem { color:var(--crimson2); font-size:.7em; letter-spacing:4px; }
+
+        .header-sub {
+            font-size:1.1em; font-style:italic; color:var(--text-muted); line-height:1.7;
+            max-width:520px; margin:0 auto;
+            outline:none; padding:4px 10px; border-radius:6px; transition:background .2s;
+        }
+        .header-sub:hover { background:rgba(155,29,58,.08); cursor:text; }
+        .header-sub:focus  { border-bottom:1px dashed var(--crimson2); border-radius:0; }
+
+        /* ── CARDS ── */
+        .sections-list { display:flex; flex-direction:column; gap:40px; }
+
+        .section-card {
+            border:1px solid var(--border); border-radius:18px;
+            overflow:hidden; box-shadow:var(--shadow);
+            animation:fadeUp .7s ease both;
+            transition:border-color .3s,box-shadow .3s;
+        }
+        .section-card:hover { border-color:var(--border2); box-shadow:var(--shadow),0 0 40px rgba(155,29,58,.08); }
+
+        .section-header {
+            background:linear-gradient(135deg,var(--card) 0%,var(--bg3) 100%);
+            padding:28px 30px 22px;
+            border-bottom:1px solid var(--border);
+            display:flex; align-items:flex-start; gap:16px;
+        }
+
+        .section-icon { font-size:1.6em; flex-shrink:0; margin-top:3px; filter:drop-shadow(0 0 6px rgba(155,29,58,.5)); }
+
+        .section-header-text { flex:1; }
+
+        .section-title {
+            font-family:'Playfair Display',serif;
+            font-size:1.5em; font-weight:700; font-style:italic;
+            color:var(--text); outline:none; padding:2px 6px; border-radius:5px; line-height:1.2;
+            transition:background .2s;
+        }
+        .section-title:hover { background:rgba(155,29,58,.12); cursor:text; }
+        .section-title:focus  { border-bottom:1px dashed var(--crimson2); border-radius:0; }
+
+        .section-desc {
+            font-size:.95em; font-style:italic; color:var(--text-muted); line-height:1.55;
+            margin-top:6px; outline:none; padding:2px 6px; border-radius:5px; transition:background .2s; min-height:22px;
+        }
+        .section-desc:hover { background:rgba(155,29,58,.08); cursor:text; }
+        .section-desc:focus  { border-bottom:1px dashed var(--crimson2); border-radius:0; }
+
+        .del-sec-btn { background:none; border:none; color:var(--text-dim); font-size:1em; cursor:pointer; padding:4px 7px; border-radius:6px; transition:color .2s,background .2s; flex-shrink:0; }
+        .del-sec-btn:hover { color:var(--rose); background:rgba(155,29,58,.15); }
+
+        /* board */
+        .trello-board { background:var(--bg2); padding:20px 22px 24px; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start; }
+
+        .trello-column {
+            background:var(--card); border:1px solid var(--border); border-radius:12px;
+            width:214px; min-width:196px; flex-shrink:0;
+            display:flex; flex-direction:column; gap:8px; padding:13px;
+            animation:fadeUp .35s ease both; transition:border-color .3s;
+        }
+        .trello-column:hover { border-color:var(--border2); }
+
+        .trello-col-title-wrap { display:flex; align-items:center; justify-content:space-between; gap:6px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+        .trello-col-title {
+            font-family:'Playfair Display',serif; font-size:.95em; font-style:italic; color:var(--gold);
+            outline:none; padding:1px 4px; border-radius:4px; flex:1; min-width:0; transition:background .2s;
+        }
+        .trello-col-title:hover { background:rgba(201,169,110,.08); cursor:text; }
+        .trello-col-title:focus  { border-bottom:1px dashed var(--gold-dim); border-radius:0; }
+
+        .del-col-btn { background:none; border:none; color:var(--text-dim); font-size:.85em; cursor:pointer; padding:2px 5px; border-radius:4px; line-height:1; flex-shrink:0; transition:color .2s,background .2s; }
+        .del-col-btn:hover { color:var(--rose); background:rgba(155,29,58,.15); }
+
+        .trello-comments { display:flex; flex-direction:column; gap:7px; }
+
+        .trello-comment {
+            background:var(--card2); border:1px solid var(--border); border-radius:8px;
+            padding:9px 28px 9px 11px; font-size:.87em; color:var(--text);
+            position:relative; transition:border-color .2s;
+        }
+        .trello-comment:hover { border-color:var(--border2); }
+
+        .comment-text { outline:none; min-height:18px; line-height:1.45; transition:background .2s; border-radius:3px; }
+        .comment-text:hover { background:rgba(155,29,58,.08); cursor:text; }
+        .comment-text:focus  { background:transparent; border-bottom:1px dashed var(--crimson2); }
+
+        .del-comment-btn { position:absolute; top:7px;right:7px; background:none;border:none;color:var(--text-dim);font-size:.75em;cursor:pointer;padding:2px 4px;border-radius:3px;opacity:0;transition:opacity .2s,color .2s; }
+        .trello-comment:hover .del-comment-btn { opacity:1; }
+        .del-comment-btn:hover { color:var(--rose); }
+
+        .add-comment-btn { background:none;border:1px dashed var(--border2);border-radius:7px;padding:7px 10px;font-size:.82em;font-family:'Crimson Pro',serif;font-style:italic;color:var(--text-dim);cursor:pointer;text-align:left;width:100%;transition:all .2s; }
+        .add-comment-btn:hover { border-color:var(--crimson2);color:var(--text-muted);background:rgba(155,29,58,.06); }
+
+        .add-col-btn { background:none;border:1px dashed var(--border2);border-radius:12px;padding:11px 16px;color:var(--text-dim);cursor:pointer;font-size:.88em;font-family:'Crimson Pro',serif;font-style:italic;display:flex;align-items:center;gap:7px;white-space:nowrap;height:fit-content;align-self:flex-start;transition:all .2s;flex-shrink:0; }
+        .add-col-btn:hover { border-color:var(--crimson2);color:var(--rose);background:rgba(155,29,58,.06); }
+
+        .add-section-wrap { text-align:center; margin-top:24px; }
+        .add-section-btn { background:transparent;border:1px solid var(--border2);border-radius:14px;padding:15px 40px;color:var(--text-dim);cursor:pointer;font-size:.95em;font-family:'Crimson Pro',serif;font-style:italic;display:inline-flex;align-items:center;gap:10px;transition:all .25s;letter-spacing:.03em; }
+        .add-section-btn:hover { border-color:var(--crimson2);color:var(--rose);background:rgba(155,29,58,.06);box-shadow:0 0 24px rgba(155,29,58,.12); }
+
+        .footer { text-align:center;margin-top:70px;color:var(--text-dim);font-size:.82em;font-style:italic;letter-spacing:.05em; }
+        .footer span { color:var(--crimson2); }
+
+        [contenteditable]:empty:before { content:attr(data-placeholder);color:var(--text-dim);font-style:italic;pointer-events:none; }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:10px; }
+        ::-webkit-scrollbar-thumb:hover { background:var(--crimson); }
+
+
+    </style>
+</head>
+<body>
+
+<div class="ambient a1"></div>
+<div class="ambient a2"></div>
+
+
+<!-- Music player – bulletproof version -->
+<div id="musicBar" style="
+    position:fixed; bottom:24px; right:24px; z-index:9999;
+    background:rgba(10,7,14,0.97); border:1px solid #3d2f52;
+    border-radius:50px; padding:10px 20px 10px 12px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.85);
+    display:flex; align-items:center; gap:12px;
+    font-family:sans-serif;
+">
+    <button id="audioBtn" style="
+        width:42px;height:42px;border-radius:50%;
+        background:linear-gradient(135deg,#9b1d3a,#c42150);
+        border:none;cursor:pointer;color:white;font-size:1.2em;
+        box-shadow:0 2px 12px rgba(155,29,58,0.6);
+        flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    ">▶</button>
+    <div>
+        <div style="font-style:italic;color:#e8dff0;font-size:.85em;">Anlatamam</div>
+        <div style="font-size:.72em;color:#8a7a9a;">Unser Lied ♥</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var audio = new Audio('song.mp3');
+    audio.loop = true;
+    audio.volume = 0.6;
+    var btn = document.getElementById('audioBtn');
+    var playing = false;
+
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (playing) {
+            audio.pause();
+            playing = false;
+            btn.innerHTML = '▶';
+        } else {
+            var p = audio.play();
+            if (p !== undefined) {
+                p.then(function() {
+                    playing = true;
+                    btn.innerHTML = '❚❚';
+                }).catch(function(err) {
+                    btn.innerHTML = '⚠';
+                    btn.title = 'Fehler: ' + err.message;
+                });
+            }
+        }
+    });
+})();
+</script>
+
+<div class="page-wrap">
+    <div class="header">
+        <div class="sigil">✦ ✦ ✦</div>
+        <h1 id="titleText" contenteditable="true" spellcheck="false">Fundas und Laersens Leben</h1>
+        <div class="header-rule"><span class="gem">❧</span></div>
+        <div id="introText" class="header-sub" contenteditable="true" spellcheck="false"
+             data-placeholder="Schreib hier etwas für euch...">
+            Willkommen auf unserer gemeinsamen Roadmap. Hier planen wir unser Leben, feiern Meilensteine und meistern Herausforderungen – alles wird gespeichert.
+        </div>
+    </div>
+
+    <div class="sections-list" id="sectionsList"></div>
+
+    <div class="add-section-wrap">
+        <button class="add-section-btn" onclick="addSection()">✦ Neues Kapitel beginnen</button>
+    </div>
+
+    <div class="footer">
+        Klicke auf jeden Text, um ihn zu bearbeiten &nbsp;<span>♥</span>&nbsp; Alles wird automatisch gespeichert
+    </div>
+</div>
+
+<script>
+// ── MUSIC ────────────────────────────────────────────────────────────
+const vizEl = document.getElementById('viz');
+let ytVisible = false;
+
+function toggleYT() {
+    const wrap = document.getElementById('ytWrap');
+    const frame = document.getElementById('ytFrame');
+    ytVisible = !ytVisible;
+    wrap.style.display = ytVisible ? 'block' : 'none';
+    // lazy-load the iframe src on first open so autoplay triggers on user gesture
+    if (ytVisible && !frame.src) {
+        frame.src = frame.dataset.src;
+        vizEl.classList.remove('paused');
+    }
+    document.getElementById('playBtn').textContent = ytVisible ? '✕' : '♫';
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────
+let state = {
+    title: 'Fundas und Laersens Leben',
+    intro: 'Willkommen auf unserer gemeinsamen Roadmap. Hier planen wir unser Leben, feiern Meilensteine und meistern Herausforderungen – alles wird gespeichert.',
+    sections: [
+        { id:'s1', icon:'🌹', title:'Ein neues Abenteuer beginnt', desc:'Unsere Highlights und Geschichten aus der Anfangszeit...',
+          columns:[
+            {id:'c1',title:'Erinnerungen',comments:['Erstes gemeinsames Frühstück ☕','Unser erster Roadtrip 🚗']},
+            {id:'c2',title:'Träume & Pläne',comments:['Gemeinsam reisen','Mehr Zeit füreinander']}
+          ]},
+        { id:'s2', icon:'⚔️', title:'Das erste große Problem: Gemeinsam lösen', desc:'Beschreibung der Herausforderung und wie wir sie gemeinsam meistern.',
+          columns:[
+            {id:'c3',title:'Die Herausforderung',comments:['Was ist passiert?','Wie fühlen wir uns?']},
+            {id:'c4',title:'Unser Weg',comments:['Schritt 1: Reden','Schritt 2: Handeln']}
+          ]},
+        { id:'s3', icon:'🕯️', title:'Unser erstes gemeinsames Zuhause', desc:'Träume, Pläne und erste Schritte für unser Zuhause.',
+          columns:[
+            {id:'c5',title:'Wunschliste',comments:['Gemütliches Sofa','Eine kleine Pflanzenecke']},
+            {id:'c6',title:'To-Do',comments:['Wohnungen anschauen','Budget planen']}
+          ]}
+    ]
+};
+let nSec = 10, nCol = 20;
+
+function save() { localStorage.setItem('lifePageDarkV1', JSON.stringify(state)); }
+function load() {
+    const s = localStorage.getItem('lifePageDarkV1');
+    if (s) try { state = JSON.parse(s); } catch(e){}
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────
+function renderAll() {
+    document.getElementById('titleText').innerText = state.title;
+    document.getElementById('introText').innerText = state.intro;
+    const list = document.getElementById('sectionsList');
+    list.innerHTML = '';
+    state.sections.forEach(sec => list.appendChild(buildSection(sec)));
+}
+
+function buildSection(sec) {
+    const card = document.createElement('div');
+    card.className = 'section-card';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'section-header';
+
+    const iconEl = document.createElement('span');
+    iconEl.className = 'section-icon';
+    iconEl.textContent = sec.icon;
+
+    const tw = document.createElement('div');
+    tw.className = 'section-header-text';
+
+    const tEl = document.createElement('div');
+    tEl.className = 'section-title';
+    tEl.contentEditable = true; tEl.spellcheck = false;
+    tEl.innerText = sec.title;
+    tEl.addEventListener('input', () => { sec.title = tEl.innerText; save(); });
+
+    const dEl = document.createElement('div');
+    dEl.className = 'section-desc';
+    dEl.contentEditable = true; dEl.spellcheck = false;
+    dEl.setAttribute('data-placeholder','Beschreibung...');
+    dEl.innerText = sec.desc;
+    dEl.addEventListener('input', () => { sec.desc = dEl.innerText; save(); });
+
+    tw.appendChild(tEl); tw.appendChild(dEl);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-sec-btn'; delBtn.textContent = '✕';
+    delBtn.onclick = () => {
+        if (confirm('Kapitel wirklich löschen?')) {
+            state.sections = state.sections.filter(s => s.id !== sec.id);
+            save(); card.remove();
+        }
+    };
+
+    hdr.appendChild(iconEl); hdr.appendChild(tw); hdr.appendChild(delBtn);
+
+    const board = document.createElement('div');
+    board.className = 'trello-board';
+
+    const addColBtn = document.createElement('button');
+    addColBtn.className = 'add-col-btn';
+    addColBtn.innerHTML = '✦ Kästchen';
+    addColBtn.onclick = () => {
+        sec.columns.push({id:'c'+(nCol++),title:'Neues Thema',comments:[]});
+        save(); rebuildBoard();
+    };
+
+    function rebuildBoard() {
+        board.innerHTML = '';
+        sec.columns.forEach(col => board.appendChild(buildColumn(sec, col)));
+        board.appendChild(addColBtn);
+    }
+
+    rebuildBoard();
+    card.appendChild(hdr); card.appendChild(board);
+    return card;
+}
+
+function buildColumn(sec, col) {
+    const colEl = document.createElement('div');
+    colEl.className = 'trello-column';
+
+    const tr = document.createElement('div');
+    tr.className = 'trello-col-title-wrap';
+
+    const tEl = document.createElement('div');
+    tEl.className = 'trello-col-title';
+    tEl.contentEditable = true; tEl.spellcheck = false;
+    tEl.innerText = col.title;
+    tEl.addEventListener('input', () => { col.title = tEl.innerText; save(); });
+
+    const delColBtn = document.createElement('button');
+    delColBtn.className = 'del-col-btn'; delColBtn.textContent = '✕';
+    delColBtn.onclick = () => { sec.columns = sec.columns.filter(c => c.id !== col.id); save(); colEl.remove(); };
+
+    tr.appendChild(tEl); tr.appendChild(delColBtn);
+    colEl.appendChild(tr);
+
+    const cw = document.createElement('div');
+    cw.className = 'trello-comments';
+    col.comments.forEach((txt, i) => cw.appendChild(buildComment(col, txt, i)));
+    colEl.appendChild(cw);
+
+    const addCBtn = document.createElement('button');
+    addCBtn.className = 'add-comment-btn';
+    addCBtn.innerHTML = '+ Eintrag hinzufügen';
+    addCBtn.onclick = () => {
+        col.comments.push('Neuer Eintrag...');
+        save();
+        const idx = col.comments.length - 1;
+        const nc = buildComment(col, col.comments[idx], idx);
+        cw.appendChild(nc);
+        setTimeout(() => { const t = nc.querySelector('.comment-text'); t.focus(); document.execCommand('selectAll',false,null); }, 30);
+    };
+    colEl.appendChild(addCBtn);
+    return colEl;
+}
+
+function buildComment(col, text, idx) {
+    const card = document.createElement('div');
+    card.className = 'trello-comment';
+    const tEl = document.createElement('div');
+    tEl.className = 'comment-text';
+    tEl.contentEditable = true; tEl.spellcheck = false;
+    tEl.innerText = text;
+    tEl.addEventListener('input', () => { col.comments[idx] = tEl.innerText; save(); });
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-comment-btn'; delBtn.textContent = '✕';
+    delBtn.onclick = () => { col.comments.splice(idx, 1); save(); card.remove(); };
+    card.appendChild(tEl); card.appendChild(delBtn);
+    return card;
+}
+
+function addSection() {
+    const icons = ['🌹','🕯️','⚔️','🦇','🌙','💎','🖤','🗝️','🌑','🩸'];
+    const ns = {
+        id:'s'+(nSec++),
+        icon: icons[Math.floor(Math.random()*icons.length)],
+        title:'Neues Kapitel', desc:'Was wird dieses Kapitel für euch bedeuten?',
+        columns:[
+            {id:'c'+(nCol++),title:'Ideen',comments:[]},
+            {id:'c'+(nCol++),title:'Pläne',comments:[]}
+        ]
+    };
+    state.sections.push(ns); save();
+    const list = document.getElementById('sectionsList');
+    list.appendChild(buildSection(ns));
+    list.lastChild.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function bindHeader() {
+    document.getElementById('titleText').addEventListener('input', e => { state.title = e.target.innerText; save(); });
+    document.getElementById('introText').addEventListener('input', e => { state.intro = e.target.innerText; save(); });
+}
+
+load(); renderAll(); bindHeader();
+</script>
+</body>
+</html>
